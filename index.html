@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minimalist To-Do & Task Management</title>
+  <meta name="description" content="A keyboard-first, distraction-free task management application inspired by Notion, Linear, and Things 3.">
+  
+  <!-- Design System CSS -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/task-list.css">
+  <link rel="stylesheet" href="css/board.css">
+  <link rel="stylesheet" href="css/calendar.css">
+  <link rel="stylesheet" href="css/drawer.css">
+  <link rel="stylesheet" href="css/modals.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <aside class="app-sidebar" id="app-sidebar" aria-label="Sidebar Navigation">
+      <div class="sidebar-header">
+        <div class="workspace-badge">
+          <div class="workspace-icon">T</div>
+          <span>Tasks &amp; Focus</span>
+        </div>
+        <button id="sidebar-collapse-btn" class="sidebar-toggle-btn" title="Toggle Sidebar ([)" aria-label="Collapse sidebar">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+      </div>
+
+      <!-- Quick Search Trigger -->
+      <button id="sidebar-search-btn" class="sidebar-search-btn" aria-label="Search or jump to (Cmd+K)">
+        <div class="sidebar-search-left">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Search or jump...</span>
+        </div>
+        <kbd class="font-mono">⌘K</kbd>
+      </button>
+
+      <!-- Nav Items -->
+      <div class="sidebar-nav">
+        <!-- Smart Views -->
+        <div>
+          <div class="nav-group-title">Views</div>
+          <ul class="nav-list" role="list">
+            <li class="nav-item active" data-view="inbox" role="button" tabindex="0">
+              <div class="nav-item-left">
+                <svg class="icon" viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+                <span>Inbox</span>
+              </div>
+              <span class="nav-count" id="count-inbox">0</span>
+            </li>
+            <li class="nav-item" data-view="today" role="button" tabindex="0">
+              <div class="nav-item-left">
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <span>Today</span>
+              </div>
+              <span class="nav-count highlight" id="count-today">0</span>
+            </li>
+            <li class="nav-item" data-view="upcoming" role="button" tabindex="0">
+              <div class="nav-item-left">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>Upcoming</span>
+              </div>
+              <span class="nav-count" id="count-upcoming">0</span>
+            </li>
+            <li class="nav-item" data-view="completed" role="button" tabindex="0">
+              <div class="nav-item-left">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <span>Completed</span>
+              </div>
+              <span class="nav-count" id="count-completed">0</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Custom Projects -->
+        <div>
+          <div class="nav-group-title">
+            <span>Projects</span>
+            <button id="add-project-modal-btn" class="add-project-btn" title="Create New Project" aria-label="New Project">+</button>
+          </div>
+          <ul class="nav-list" id="sidebar-projects-list" role="list">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+
+        <!-- Tags List -->
+        <div>
+          <div class="nav-group-title">Tags</div>
+          <ul class="nav-list" id="sidebar-tags-list" role="list">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <button id="theme-toggle-btn" class="sidebar-footer-btn" title="Toggle Dark/Light Mode (T)">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <span id="theme-btn-label">Theme</span>
+        </button>
+        <button id="backup-btn" class="sidebar-footer-btn" title="Export / Backup Tasks JSON">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Backup</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Canvas -->
+    <main class="app-main">
+      <!-- App Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button id="sidebar-expand-btn" class="sidebar-toggle-btn" style="display:none;" title="Expand Sidebar ([)">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <div class="view-heading" id="view-title">
+            <span id="view-icon">📥</span>
+            <span id="view-text">Inbox</span>
+          </div>
+
+          <!-- Layout Switcher Tabs -->
+          <div class="view-switcher-tabs" role="tablist" aria-label="Layout Modes">
+            <button class="view-tab-btn active" data-mode="list" role="tab" aria-selected="true" title="List View (1)">
+              <svg class="icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>List</span>
+            </button>
+            <button class="view-tab-btn" data-mode="board" role="tab" aria-selected="false" title="Kanban Board View (2)">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+              <span>Board</span>
+            </button>
+            <button class="view-tab-btn" data-mode="calendar" role="tab" aria-selected="false" title="Calendar View (3)">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Calendar</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button id="header-quick-add-btn" class="btn-header btn-primary" title="Quick Add Task (Q / C)">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>New Task</span>
+            <kbd class="font-mono">Q</kbd>
+          </button>
+        </div>
+      </header>
+
+      <!-- Filter & Sort Strip -->
+      <section class="filter-strip" aria-label="Task Filters &amp; Sorting">
+        <div class="filter-group">
+          <!-- Priority Filter -->
+          <span style="color:var(--text-muted); font-weight:500;">Priority:</span>
+          <button class="filter-chip active" data-priority="all">All</button>
+          <button class="filter-chip" data-priority="p1"><span class="priority-dot p1"></span> P1</button>
+          <button class="filter-chip" data-priority="p2"><span class="priority-dot p2"></span> P2</button>
+          <button class="filter-chip" data-priority="p3"><span class="priority-dot p3"></span> P3</button>
+          <button class="filter-chip" data-priority="p4"><span class="priority-dot p4"></span> P4</button>
+        </div>
+
+        <div class="filter-group">
+          <!-- Sort Dropdown -->
+          <span style="color:var(--text-muted); font-weight:500;">Sort:</span>
+          <select id="sort-select" class="filter-select">
+            <option value="manual">Manual (Drag &amp; Drop)</option>
+            <option value="dueDate">Due Date</option>
+            <option value="priority">Priority (P1 → P4)</option>
+            <option value="title">Alphabetical (A → Z)</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Scrollable Canvas Area -->
+      <section class="canvas-scrollable" id="canvas-scroll-container">
+        <div class="canvas-inner" id="main-content-view">
+          <!-- View dynamically rendered (List, Board, Calendar) -->
+        </div>
+      </section>
+
+      <!-- Status & Keyboard Shortcuts Helper Footer -->
+      <footer class="app-statusbar">
+        <div class="statusbar-shortcuts">
+          <span class="statusbar-item"><kbd>J</kbd>/<kbd>K</kbd> Navigate</span>
+          <span class="statusbar-item"><kbd>Space</kbd> Complete</span>
+          <span class="statusbar-item"><kbd>Enter</kbd> Details</span>
+          <span class="statusbar-item"><kbd>P</kbd> Priority</span>
+          <span class="statusbar-item"><kbd>Backspace</kbd> Delete</span>
+          <span class="statusbar-item"><kbd>Q</kbd> Quick Add</span>
+        </div>
+        <div>
+          <span class="statusbar-item" style="cursor:pointer;" id="shortcuts-statusbar-btn">
+            <kbd>?</kbd> Keyboard Shortcuts
+          </span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Task Detail Slide-Over Drawer -->
+  <div id="drawer-backdrop" class="drawer-backdrop"></div>
+  <aside id="task-drawer" class="task-drawer" aria-label="Task Details">
+    <!-- Dynamically populated by TaskDrawer -->
+  </aside>
+
+  <!-- Command Palette Modal (Cmd+K) -->
+  <div id="palette-modal-backdrop" class="modal-backdrop">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Command Palette">
+      <div class="palette-header">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input id="palette-input" class="palette-input" placeholder="Type a command or search tasks..." autocomplete="off" />
+        <kbd class="font-mono">ESC</kbd>
+      </div>
+      <div id="palette-list" class="palette-list">
+        <!-- Dynamically rendered -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Add Modal (Q / C) -->
+  <div id="quick-add-modal-backdrop" class="modal-backdrop">
+    <div class="modal-box quick-add-modal" role="dialog" aria-modal="true" aria-label="Quick Add Task">
+      <div class="quick-add-header">
+        <span>Quick Add Task</span>
+        <button id="quick-add-close-btn" class="action-btn" title="Close (Esc)">×</button>
+      </div>
+      <input id="quick-add-title" class="quick-add-input" placeholder="What needs to be done? e.g. Meeting tomorrow 3pm !p1 #Work" autocomplete="off" />
+      <textarea id="quick-add-desc" class="quick-add-desc-input" placeholder="Notes or description (optional)..."></textarea>
+      
+      <!-- Natural Language Parsed Tokens Preview Chips -->
+      <div id="quick-add-chips" class="quick-add-nlp-chips"></div>
+
+      <div class="quick-add-footer">
+        <div class="quick-add-selectors">
+          <select id="quick-add-project-select" class="meta-select font-mono" title="Select Project"></select>
+          <select id="quick-add-priority-select" class="meta-select font-mono" title="Select Priority">
+            <option value="p1">P1 Urgent</option>
+            <option value="p2">P2 High</option>
+            <option value="p3">P3 Medium</option>
+            <option value="p4" selected>P4 Low</option>
+          </select>
+          <input id="quick-add-date" type="date" class="meta-select font-mono" title="Due Date" />
+        </div>
+        <button id="quick-add-submit-btn" class="btn-header btn-primary">
+          <span>Add Task</span>
+          <kbd class="font-mono">↵</kbd>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Project Modal -->
+  <div id="new-project-modal-backdrop" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 420px;" role="dialog" aria-modal="true" aria-label="Create New Project">
+      <div class="quick-add-header">
+        <span>Create Project List</span>
+        <button id="new-project-close-btn" class="action-btn">×</button>
+      </div>
+      <div style="padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+        <div>
+          <label style="font-size: var(--text-xs); color: var(--text-muted); display: block; margin-bottom: 6px;">Project Name</label>
+          <input id="new-project-name" class="inline-add-input" style="border: 1px solid var(--border-subtle); padding: 6px 10px; border-radius: var(--radius-xs); width: 100%;" placeholder="e.g. Mobile App Redesign" />
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <div style="flex: 1;">
+            <label style="font-size: var(--text-xs); color: var(--text-muted); display: block; margin-bottom: 6px;">Icon / Emoji</label>
+            <input id="new-project-icon" class="inline-add-input" style="border: 1px solid var(--border-subtle); padding: 6px 10px; border-radius: var(--radius-xs); width: 100%; text-align: center; font-size: 16px;" value="📁" maxlength="2" />
+          </div>
+          <div style="flex: 1;">
+            <label style="font-size: var(--text-xs); color: var(--text-muted); display: block; margin-bottom: 6px;">Color Accent</label>
+            <select id="new-project-color" class="meta-select" style="width: 100%; height: 34px;">
+              <option value="#3B82F6">Blue</option>
+              <option value="#10B981">Green</option>
+              <option value="#EC4899">Pink</option>
+              <option value="#F59E0B">Amber</option>
+              <option value="#8B5CF6">Purple</option>
+              <option value="#EF4444">Red</option>
+              <option value="#6B7280">Gray</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="quick-add-footer">
+        <button id="new-project-cancel-btn" class="btn-header">Cancel</button>
+        <button id="new-project-save-btn" class="btn-header btn-primary">Create List</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Cheat Sheet Modal (?) -->
+  <div id="shortcuts-modal-backdrop" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 540px;" role="dialog" aria-modal="true" aria-label="Keyboard Shortcuts">
+      <div class="quick-add-header">
+        <span>Keyboard Shortcuts</span>
+        <button id="shortcuts-close-btn" class="action-btn">×</button>
+      </div>
+      <div class="shortcuts-table">
+        <div class="shortcut-group-card">
+          <div class="shortcut-group-heading">Navigation</div>
+          <div class="shortcut-row"><span>Move task selection</span><div><kbd>J</kbd> / <kbd>K</kbd> or <kbd>↓</kbd> / <kbd>↑</kbd></div></div>
+          <div class="shortcut-row"><span>Command Palette</span><div><kbd>⌘K</kbd> or <kbd>Ctrl+K</kbd></div></div>
+          <div class="shortcut-row"><span>Toggle Sidebar</span><div><kbd>[</kbd></div></div>
+          <div class="shortcut-row"><span>List View</span><div><kbd>1</kbd></div></div>
+          <div class="shortcut-row"><span>Board View</span><div><kbd>2</kbd></div></div>
+          <div class="shortcut-row"><span>Calendar View</span><div><kbd>3</kbd></div></div>
+        </div>
+
+        <div class="shortcut-group-card">
+          <div class="shortcut-group-heading">Task Actions</div>
+          <div class="shortcut-row"><span>Quick Add Task</span><div><kbd>Q</kbd> or <kbd>C</kbd></div></div>
+          <div class="shortcut-row"><span>Toggle Complete</span><div><kbd>Space</kbd> or <kbd>X</kbd></div></div>
+          <div class="shortcut-row"><span>Edit / Open Drawer</span><div><kbd>Enter</kbd> or <kbd>E</kbd></div></div>
+          <div class="shortcut-row"><span>Cycle Priority</span><div><kbd>P</kbd></div></div>
+          <div class="shortcut-row"><span>Delete Task (Undoable)</span><div><kbd>Backspace</kbd></div></div>
+          <div class="shortcut-row"><span>Toggle Theme</span><div><kbd>T</kbd></div></div>
+          <div class="shortcut-row"><span>Close / Dismiss</span><div><kbd>Esc</kbd></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notification for Undo -->
+  <div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
+
+  <!-- Application Logic Modules -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

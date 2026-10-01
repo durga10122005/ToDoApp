@@ -1,0 +1,10 @@
+{
+  "name": "todo-app-v2",
+  "version": "2.0.0",
+  "description": "Keyboard-first, distraction-free To-Do & Task Management web application",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  }
+}
