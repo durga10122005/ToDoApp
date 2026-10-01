@@ -1,13 +1,18 @@
 /**
  * Central State Store & Event Bus
+ * Integrated with IndexedDB, SyncEngine, and AuthClient for Linear-Speed Local-First UX.
  */
 import { storage } from './storage.js';
+import { idb } from './offline/indexedDb.js';
+import { syncEngine } from './offline/syncEngine.js';
+import { authClient } from './auth/authClient.js';
+import { sanitizeHtml } from './security/sanitizer.js';
 
 class StateStore {
   constructor() {
     this.settings = storage.getSettings();
-    this.tasks = storage.getTasks();
-    this.projects = storage.getProjects();
+    this.tasks = [];
+    this.projects = [];
 
     this.currentView = this.settings.activeNav || 'inbox';
     this.viewMode = this.settings.viewMode || 'list';
@@ -22,6 +27,52 @@ class StateStore {
     this.focusedTaskIndex = 0;
     this.lastDeletedTask = null;
     this.subscribers = new Set();
+
+    this.initialized = false;
+  }
+
+  async init() {
+    // 1. Load from IndexedDB
+    try {
+      const cachedTasks = await idb.getAll('tasks');
+      const cachedProjects = await idb.getAll('projects');
+
+      if (cachedTasks && cachedTasks.length > 0) {
+        this.tasks = cachedTasks;
+      } else {
+        // Fallback to storage seed
+        this.tasks = storage.getTasks();
+        await idb.putMany('tasks', this.tasks);
+      }
+
+      if (cachedProjects && cachedProjects.length > 0) {
+        this.projects = cachedProjects;
+      } else {
+        this.projects = storage.getProjects();
+        await idb.putMany('projects', this.projects);
+      }
+    } catch (e) {
+      this.tasks = storage.getTasks();
+      this.projects = storage.getProjects();
+    }
+
+    // 2. Check Auth Status
+    const user = await authClient.checkAuth();
+    if (user) {
+      await this.syncRemoteData();
+    }
+
+    this.initialized = true;
+    this.notify('STORE_INITIALIZED');
+  }
+
+  async syncRemoteData() {
+    if (!authClient.currentUser) return;
+    const remoteTasks = await syncEngine.fetchRemoteTasks();
+    if (remoteTasks) {
+      this.tasks = remoteTasks;
+      this.notify('TASKS_SYNCED');
+    }
   }
 
   subscribe(callback) {
@@ -86,6 +137,9 @@ class StateStore {
   getFilteredTasks() {
     let list = [...this.tasks];
 
+    // Filter out deleted
+    list = list.filter(t => !t.isDeleted);
+
     // 1. Current View Filter
     const todayStr = new Date().toISOString().slice(0, 10);
     if (this.currentView === 'inbox') {
@@ -95,7 +149,7 @@ class StateStore {
         if (t.status === 'done') return false;
         if (!t.dueDate) return false;
         const dueStr = t.dueDate.slice(0, 10);
-        return dueStr <= todayStr; // includes overdue and today
+        return dueStr <= todayStr;
       });
     } else if (this.currentView === 'upcoming') {
       list = list.filter(t => {
@@ -152,37 +206,50 @@ class StateStore {
     return list;
   }
 
+  // Linear-Speed Optimistic Update (< 16ms)
   addTask(taskData) {
     const newTask = {
-      id: 'task-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
-      title: taskData.title || 'Untitled Task',
-      description: taskData.description || '',
+      id: 'task_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      title: sanitizeHtml(taskData.title) || 'Untitled Task',
+      description: sanitizeHtml(taskData.description) || '',
       status: taskData.status || 'todo',
       priority: taskData.priority || 'p4',
       projectId: taskData.projectId || (this.currentView.startsWith('project:') ? this.currentView.replace('project:', '') : 'proj-inbox'),
       tags: taskData.tags || [],
       dueDate: taskData.dueDate || null,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       completedAt: null,
       subtasks: taskData.subtasks || [],
       attachments: taskData.attachments || [],
       activity: [
         { text: 'Task created', timestamp: new Date().toISOString() }
-      ]
+      ],
+      isDeleted: false
     };
 
+    // 1. Optimistic memory update
     this.tasks.unshift(newTask);
-    storage.saveTasks(this.tasks);
     this.focusedTaskIndex = 0;
     this.notify('TASK_ADDED', newTask);
+
+    // 2. Persist to IndexedDB & queue sync mutation
+    idb.put('tasks', newTask).catch(console.error);
+    storage.saveTasks(this.tasks);
+    syncEngine.queueMutation('CREATE', newTask.id, newTask);
+
     return newTask;
   }
 
+  // Linear-Speed Optimistic Update (< 16ms)
   updateTask(taskId, updates) {
     const task = this.tasks.find(t => t.id === taskId);
     if (!task) return null;
 
-    // Check status changes to add activity audit
+    if (updates.title) updates.title = sanitizeHtml(updates.title);
+    if (updates.description) updates.description = sanitizeHtml(updates.description);
+
+    // Audit trail
     if (updates.status && updates.status !== task.status) {
       task.activity.unshift({
         text: `Status changed to ${updates.status === 'done' ? 'Completed' : updates.status === 'inprogress' ? 'In Progress' : 'To Do'}`,
@@ -202,9 +269,17 @@ class StateStore {
       });
     }
 
+    updates.updatedAt = new Date().toISOString();
     Object.assign(task, updates);
-    storage.saveTasks(this.tasks);
+
+    // Optimistic notify
     this.notify('TASK_UPDATED', task);
+
+    // Persist & sync
+    idb.put('tasks', task).catch(console.error);
+    storage.saveTasks(this.tasks);
+    syncEngine.queueMutation('UPDATE', taskId, updates);
+
     return task;
   }
 
@@ -226,27 +301,39 @@ class StateStore {
     return this.updateTask(taskId, { priority: nextPriority });
   }
 
+  // Linear-Speed Optimistic Delete
   deleteTask(taskId) {
     const idx = this.tasks.findIndex(t => t.id === taskId);
     if (idx === -1) return null;
 
-    this.lastDeletedTask = { task: this.tasks[idx], index: idx };
+    this.lastDeletedTask = { task: { ...this.tasks[idx] }, index: idx };
     const [deleted] = this.tasks.splice(idx, 1);
-    storage.saveTasks(this.tasks);
+    deleted.isDeleted = true;
 
     if (this.selectedTaskId === taskId) {
       this.selectedTaskId = null;
     }
 
     this.notify('TASK_DELETED', { task: deleted, canUndo: true });
+
+    // Persist & sync
+    idb.delete('tasks', taskId).catch(console.error);
+    storage.saveTasks(this.tasks);
+    syncEngine.queueMutation('DELETE', taskId, null);
+
     return deleted;
   }
 
   undoDelete() {
     if (!this.lastDeletedTask) return null;
     const { task, index } = this.lastDeletedTask;
+    task.isDeleted = false;
     this.tasks.splice(index, 0, task);
+
+    idb.put('tasks', task).catch(console.error);
     storage.saveTasks(this.tasks);
+    syncEngine.queueMutation('CREATE', task.id, task);
+
     const restored = task;
     this.lastDeletedTask = null;
     this.notify('TASK_RESTORED', restored);
@@ -261,20 +348,24 @@ class StateStore {
     const [moved] = this.tasks.splice(fromIndex, 1);
     const insertIndex = position === 'after' ? toIndex + 1 : toIndex;
     this.tasks.splice(insertIndex, 0, moved);
+
     storage.saveTasks(this.tasks);
     this.notify('TASKS_REORDERED', { movedId: draggedId });
   }
 
   addProject(projectData) {
     const newProj = {
-      id: 'proj-' + Date.now(),
-      name: projectData.name || 'Untitled List',
+      id: 'proj_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      name: sanitizeHtml(projectData.name) || 'Untitled List',
       color: projectData.color || '#3B82F6',
       icon: projectData.icon || '📁',
-      isSystem: false
+      isSystem: false,
+      createdAt: new Date().toISOString()
     };
     this.projects.push(newProj);
+    idb.put('projects', newProj).catch(console.error);
     storage.saveProjects(this.projects);
+
     this.notify('PROJECT_ADDED', newProj);
     return newProj;
   }
@@ -284,13 +375,15 @@ class StateStore {
     if (idx === -1 || this.projects[idx].isSystem) return;
 
     this.projects.splice(idx, 1);
+    idb.delete('projects', projectId).catch(console.error);
     storage.saveProjects(this.projects);
 
-    // Reassign tasks to inbox
     this.tasks.forEach(t => {
-      if (t.projectId === projectId) t.projectId = 'proj-inbox';
+      if (t.projectId === projectId) {
+        t.projectId = 'proj-inbox';
+        idb.put('tasks', t).catch(console.error);
+      }
     });
-    storage.saveTasks(this.tasks);
 
     if (this.currentView === `project:${projectId}`) {
       this.setCurrentView('inbox');
@@ -305,7 +398,7 @@ class StateStore {
   getAllTags() {
     const tagSet = new Set();
     this.tasks.forEach(t => {
-      if (Array.isArray(t.tags)) {
+      if (!t.isDeleted && Array.isArray(t.tags)) {
         t.tags.forEach(tag => tagSet.add(tag));
       }
     });
@@ -314,11 +407,12 @@ class StateStore {
 
   getTaskCounts() {
     const todayStr = new Date().toISOString().slice(0, 10);
+    const active = this.tasks.filter(t => !t.isDeleted);
     return {
-      inbox: this.tasks.filter(t => t.status !== 'done').length,
-      today: this.tasks.filter(t => t.status !== 'done' && t.dueDate && t.dueDate.slice(0, 10) <= todayStr).length,
-      upcoming: this.tasks.filter(t => t.status !== 'done' && t.dueDate && t.dueDate.slice(0, 10) > todayStr).length,
-      completed: this.tasks.filter(t => t.status === 'done').length
+      inbox: active.filter(t => t.status !== 'done').length,
+      today: active.filter(t => t.status !== 'done' && t.dueDate && t.dueDate.slice(0, 10) <= todayStr).length,
+      upcoming: active.filter(t => t.status !== 'done' && t.dueDate && t.dueDate.slice(0, 10) > todayStr).length,
+      completed: active.filter(t => t.status === 'done').length
     };
   }
 }

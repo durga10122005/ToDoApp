@@ -3,20 +3,28 @@
  */
 import { state } from './state.js';
 import { storage } from './storage.js';
+import { authClient } from './auth/authClient.js';
+import { syncEngine } from './offline/syncEngine.js';
+
 import { QuickAddModal } from './components/quickAdd.js';
 import { CommandPalette } from './components/commandPalette.js';
 import { TaskDrawer } from './components/taskDrawer.js';
 import { ShortcutsManager } from './components/shortcuts.js';
+import { AuthModal } from './components/authModal.js';
+import { SessionModal } from './components/sessionModal.js';
 import { toast } from './components/toast.js';
 
 import { renderListView } from './views/listView.js';
 import { renderBoardView } from './views/boardView.js';
 import { renderCalendarView } from './views/calendarView.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Initialize Components
+document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize Modals & Components
   const quickAdd = new QuickAddModal();
   const taskDrawer = new TaskDrawer();
+  const authModal = new AuthModal();
+  const sessionModal = new SessionModal();
+
   const shortcutsModal = {
     open: () => shortcutsManager.openShortcuts(),
     close: () => shortcutsManager.closeShortcuts()
@@ -39,8 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Bind New Project Modal
   bindNewProjectModal();
 
+  // Bind Auth & Session Profile Buttons
+  bindAuthAndSessions(authModal, sessionModal);
+
+  // Bind Sync Status Pill
+  bindSyncStatus();
+
   // Bind Global & Custom Listeners
   bindGlobalEvents(quickAdd, commandPalette, shortcutsManager);
+
+  // Initialize State (IndexedDB + Remote Check)
+  await state.init();
 
   // State Change Subscriber
   state.subscribe((event, payload) => {
@@ -56,6 +73,60 @@ document.addEventListener('DOMContentLoaded', () => {
   updateSidebarCounts();
   renderCurrentView();
 });
+
+function bindAuthAndSessions(authModal, sessionModal) {
+  const profileBtn = document.getElementById('user-profile-btn');
+  const nameLabel = document.getElementById('user-name-label');
+  const avatarEl = document.getElementById('user-avatar');
+
+  const updateProfileUI = (user) => {
+    if (user) {
+      nameLabel.textContent = user.name || user.email.split('@')[0];
+      avatarEl.textContent = (user.name || user.email).charAt(0).toUpperCase();
+      avatarEl.style.backgroundColor = 'var(--status-done)';
+    } else {
+      nameLabel.textContent = 'Sign In';
+      avatarEl.textContent = '?';
+      avatarEl.style.backgroundColor = 'var(--text-primary)';
+    }
+  };
+
+  authClient.subscribe((user) => {
+    updateProfileUI(user);
+    state.syncRemoteData().then(() => {
+      renderSidebarProjects();
+      renderSidebarTags();
+      updateSidebarCounts();
+      renderCurrentView();
+    });
+  });
+
+  if (profileBtn) {
+    profileBtn.addEventListener('click', () => {
+      if (authClient.currentUser) {
+        sessionModal.open();
+      } else {
+        authModal.open('login');
+      }
+    });
+  }
+
+  updateProfileUI(authClient.currentUser);
+}
+
+function bindSyncStatus() {
+  const dot = document.getElementById('sync-status-dot');
+  const text = document.getElementById('sync-status-text');
+
+  syncEngine.subscribe((status) => {
+    if (!dot || !text) return;
+    dot.className = `sync-status-dot ${status}`;
+    if (status === 'synced') text.textContent = 'Synced';
+    else if (status === 'syncing') text.textContent = 'Syncing...';
+    else if (status === 'offline') text.textContent = 'Offline';
+    else if (status === 'error') text.textContent = 'Sync Error';
+  });
+}
 
 function renderCurrentView() {
   const container = document.getElementById('main-content-view');

@@ -140,6 +140,18 @@
         </div>
 
         <div class="header-right">
+          <!-- Sync Status Indicator Pill -->
+          <div id="sync-status-indicator" class="sync-status-pill" title="Local-First Sync Status">
+            <span class="sync-status-dot synced" id="sync-status-dot"></span>
+            <span id="sync-status-text">Synced</span>
+          </div>
+
+          <!-- User Profile / Auth Button -->
+          <button id="user-profile-btn" class="user-profile-badge" title="Account & Sessions">
+            <span class="user-avatar-circle" id="user-avatar">?</span>
+            <span id="user-name-label">Sign In</span>
+          </button>
+
           <button id="header-quick-add-btn" class="btn-header btn-primary" title="Quick Add Task (Q / C)">
             <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span>New Task</span>
@@ -320,10 +332,63 @@
     </div>
   </div>
 
+  <!-- Auth Modal (OAuth, Magic Link, Strict Password) -->
+  <div id="auth-modal-backdrop" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 440px;" role="dialog" aria-modal="true" aria-label="Authentication">
+      <div class="quick-add-header">
+        <span>Account &amp; Security</span>
+        <button id="auth-close-btn" class="action-btn">×</button>
+      </div>
+      <div id="auth-modal-content">
+        <!-- Rendered by AuthModal -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Sessions & GDPR Compliance Dashboard Modal -->
+  <div id="session-modal-backdrop" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 520px;" role="dialog" aria-modal="true" aria-label="Active Sessions and Privacy">
+      <div class="quick-add-header">
+        <span>Active Sessions &amp; Privacy Dashboard</span>
+        <button id="session-close-btn" class="action-btn">×</button>
+      </div>
+      <div id="session-modal-content" style="padding: 20px 24px;">
+        <!-- Rendered by SessionModal -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Error Boundary -->
+  <div id="global-error-boundary" style="display:none; position:fixed; inset:0; background:var(--bg-canvas); z-index:9999; padding:40px; text-align:center; flex-direction:column; align-items:center; justify-content:center;">
+    <div style="font-size:32px; margin-bottom:12px;">⚠️</div>
+    <h2 style="margin-bottom:8px;">Something went wrong</h2>
+    <p id="global-error-msg" style="color:var(--text-muted); font-size:14px; max-width:460px; margin-bottom:20px;"></p>
+    <button onclick="window.location.reload()" class="btn-header btn-primary">Reload Application</button>
+  </div>
+
   <!-- Floating Toast Notification for Undo -->
   <div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
 
   <!-- Application Logic Modules -->
   <script type="module" src="js/app.js"></script>
+
+  <!-- Service Worker Registration for Offline Caching -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          console.warn('Service worker registration failed:', err);
+        });
+      });
+    }
+
+    // Global Error Boundary Catchers
+    window.addEventListener('error', (event) => {
+      console.error('Captured by global error boundary:', event.error);
+    });
+    window.addEventListener('unhandledrejection', (event) => {
+      console.error('Unhandled promise rejection:', event.reason);
+    });
+  </script>
 </body>
 </html>

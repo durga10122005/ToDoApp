@@ -1,0 +1,338 @@
+{
+  "users": [
+    {
+      "id": "usr_1790838155292_y4rh6",
+      "email": "bob_1790838154781@example.com",
+      "passwordHash": "3c3fdb34dce23a1301e97b2ad74451ee1882ebdacd9a809e7fc200b515918bf11033256ac28cf82a5f93ba2221c3eb4bdef5185923469bd853ee0357eb82ded8",
+      "salt": "6e7d820ba7f5961424b6a8c52c553571dcb7a987e2618b13b40d244ef368c99f",
+      "name": "Bob Engineer",
+      "authProvider": "local",
+      "createdAt": "2026-10-01T07:02:35.292Z",
+      "updatedAt": "2026-10-01T07:02:35.292Z"
+    },
+    {
+      "id": "usr_1790838155392_cfnlp",
+      "email": "magic_1790838155378@example.com",
+      "passwordHash": null,
+      "salt": null,
+      "name": "magic_1790838155378",
+      "authProvider": "magic-link",
+      "createdAt": "2026-10-01T07:02:35.392Z",
+      "updatedAt": "2026-10-01T07:02:35.392Z"
+    },
+    {
+      "id": "usr_1790838155400_3877r",
+      "email": "gh_1790838155402@example.com",
+      "passwordHash": null,
+      "salt": null,
+      "name": "GITHUB Developer",
+      "authProvider": "github",
+      "createdAt": "2026-10-01T07:02:35.400Z",
+      "updatedAt": "2026-10-01T07:02:35.400Z"
+    },
+    {
+      "id": "usr_1790839252644_ndgx6",
+      "email": "bob_1790839250860@example.com",
+      "passwordHash": "5ce4565e0f70f60d7d172bc69742bc33d7d04604b74fe252c6091665e3967f0481f31350ff7c87c0fe30d126aea827381e5d2e0942348b5c6fa458c6c822763a",
+      "salt": "748747c2d2ebf7fb5db3eb93a299aa35347892fdbf1d6d034a74304895e3c24b",
+      "name": "Bob Engineer",
+      "authProvider": "local",
+      "createdAt": "2026-10-01T07:20:52.644Z",
+      "updatedAt": "2026-10-01T07:20:52.644Z"
+    },
+    {
+      "id": "usr_1790839252734_l4iq0",
+      "email": "magic_1790839252709@example.com",
+      "passwordHash": null,
+      "salt": null,
+      "name": "magic_1790839252709",
+      "authProvider": "magic-link",
+      "createdAt": "2026-10-01T07:20:52.734Z",
+      "updatedAt": "2026-10-01T07:20:52.734Z"
+    },
+    {
+      "id": "usr_1790839252755_8p91x",
+      "email": "gh_1790839252741@example.com",
+      "passwordHash": null,
+      "salt": null,
+      "name": "GITHUB Developer",
+      "authProvider": "github",
+      "createdAt": "2026-10-01T07:20:52.755Z",
+      "updatedAt": "2026-10-01T07:20:52.755Z"
+    }
+  ],
+  "sessions": [
+    {
+      "id": "sess_1790838155295_hwbll",
+      "userId": "usr_1790838155292_y4rh6",
+      "refreshTokenHash": "aee14152694f0da3732ccdba23cac11d01e919f25182c1e293af9ffbf3801387",
+      "ip": "::1",
+      "device": "Desktop",
+      "os": "Unknown OS",
+      "browser": "Browser",
+      "lastActive": "2026-10-01T07:02:35.295Z",
+      "expiresAt": "2026-10-31T07:02:35.295Z",
+      "isValid": true
+    },
+    {
+      "id": "sess_1790838155394_sbflb",
+      "userId": "usr_1790838155392_cfnlp",
+      "refreshTokenHash": "9e97706d97475b831af851ff7b794ad9de8aed94d37d241d3d747b86cc7fa243",
+      "ip": "::1",
+      "device": "Desktop",
+      "os": "Unknown OS",
+      "browser": "Browser",
+      "lastActive": "2026-10-01T07:02:35.394Z",
+      "expiresAt": "2026-10-31T07:02:35.394Z",
+      "isValid": true
+    },
+    {
+      "id": "sess_1790838155402_vl4et",
+      "userId": "usr_1790838155400_3877r",
+      "refreshTokenHash": "9a022047636d70901ea3864e9bbe3079962a0f3e2504746c4797459ced0ea706",
+      "ip": "::1",
+      "device": "Desktop",
+      "os": "Unknown OS",
+      "browser": "Browser",
+      "lastActive": "2026-10-01T07:02:35.402Z",
+      "expiresAt": "2026-10-31T07:02:35.402Z",
+      "isValid": true
+    },
+    {
+      "id": "sess_1790839252647_jshva",
+      "userId": "usr_1790839252644_ndgx6",
+      "refreshTokenHash": "5eaa21fd56fd98ef40a9fae410b7e2ff99a9d6f044c28deda03cda3c197423b7",
+      "ip": "::1",
+      "device": "Desktop",
+      "os": "Unknown OS",
+      "browser": "Browser",
+      "lastActive": "2026-10-01T07:20:52.647Z",
+      "expiresAt": "2026-10-31T07:20:52.647Z",
+      "isValid": true
+    },
+    {
+      "id": "sess_1790839252736_lwmxh",
+      "userId": "usr_1790839252734_l4iq0",
+      "refreshTokenHash": "fadf942b62ad1aedb6ea71f353c755f6f3db5192e4efd22ebb91f31409ef13eb",
+      "ip": "::1",
+      "device": "Desktop",
+      "os": "Unknown OS",
+      "browser": "Browser",
+      "lastActive": "2026-10-01T07:20:52.736Z",
+      "expiresAt": "2026-10-31T07:20:52.736Z",
+      "isValid": true
+    },
+    {
+      "id": "sess_1790839252757_73vbb",
+      "userId": "usr_1790839252755_8p91x",
+      "refreshTokenHash": "1451d76e4f79dba11f6d849c3a8e0ed5978234e3168d6f79718cc4e09b7757bb",
+      "ip": "::1",
+      "device": "Desktop",
+      "os": "Unknown OS",
+      "browser": "Browser",
+      "lastActive": "2026-10-01T07:20:52.757Z",
+      "expiresAt": "2026-10-31T07:20:52.757Z",
+      "isValid": true
+    }
+  ],
+  "magicLinks": [
+    {
+      "id": "ml_1790838155376",
+      "email": "magic_1790838155378@example.com",
+      "tokenHash": "b99dbe6d0397192d5a6086c5ee3ab80493369285bc4d0642cf6b2321a1cca7c0",
+      "expiresAt": "2026-10-01T07:17:35.376Z",
+      "used": true
+    },
+    {
+      "id": "ml_1790839252725",
+      "email": "magic_1790839252709@example.com",
+      "tokenHash": "11ac539e50ded7fc44b242f7b2836a91f70acc40965c36e43192bb1537e7b0f5",
+      "expiresAt": "2026-10-01T07:35:52.725Z",
+      "used": true
+    }
+  ],
+  "tasks": [],
+  "projects": [
+    {
+      "id": "proj-inbox-usr_1790838155292_y4rh6",
+      "userId": "usr_1790838155292_y4rh6",
+      "name": "Inbox",
+      "color": "#6B7280",
+      "icon": "📥",
+      "isSystem": true,
+      "createdAt": "2026-10-01T07:02:35.292Z",
+      "updatedAt": "2026-10-01T07:02:35.292Z"
+    },
+    {
+      "id": "proj-eng-usr_1790838155292_y4rh6",
+      "userId": "usr_1790838155292_y4rh6",
+      "name": "Engineering",
+      "color": "#3B82F6",
+      "icon": "⚡",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:02:35.292Z",
+      "updatedAt": "2026-10-01T07:02:35.292Z"
+    },
+    {
+      "id": "proj-design-usr_1790838155292_y4rh6",
+      "userId": "usr_1790838155292_y4rh6",
+      "name": "Design System",
+      "color": "#EC4899",
+      "icon": "🎨",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:02:35.292Z",
+      "updatedAt": "2026-10-01T07:02:35.292Z"
+    },
+    {
+      "id": "proj-inbox-usr_1790838155392_cfnlp",
+      "userId": "usr_1790838155392_cfnlp",
+      "name": "Inbox",
+      "color": "#6B7280",
+      "icon": "📥",
+      "isSystem": true,
+      "createdAt": "2026-10-01T07:02:35.392Z",
+      "updatedAt": "2026-10-01T07:02:35.392Z"
+    },
+    {
+      "id": "proj-eng-usr_1790838155392_cfnlp",
+      "userId": "usr_1790838155392_cfnlp",
+      "name": "Engineering",
+      "color": "#3B82F6",
+      "icon": "⚡",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:02:35.392Z",
+      "updatedAt": "2026-10-01T07:02:35.392Z"
+    },
+    {
+      "id": "proj-design-usr_1790838155392_cfnlp",
+      "userId": "usr_1790838155392_cfnlp",
+      "name": "Design System",
+      "color": "#EC4899",
+      "icon": "🎨",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:02:35.392Z",
+      "updatedAt": "2026-10-01T07:02:35.392Z"
+    },
+    {
+      "id": "proj-inbox-usr_1790838155400_3877r",
+      "userId": "usr_1790838155400_3877r",
+      "name": "Inbox",
+      "color": "#6B7280",
+      "icon": "📥",
+      "isSystem": true,
+      "createdAt": "2026-10-01T07:02:35.400Z",
+      "updatedAt": "2026-10-01T07:02:35.400Z"
+    },
+    {
+      "id": "proj-eng-usr_1790838155400_3877r",
+      "userId": "usr_1790838155400_3877r",
+      "name": "Engineering",
+      "color": "#3B82F6",
+      "icon": "⚡",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:02:35.400Z",
+      "updatedAt": "2026-10-01T07:02:35.400Z"
+    },
+    {
+      "id": "proj-design-usr_1790838155400_3877r",
+      "userId": "usr_1790838155400_3877r",
+      "name": "Design System",
+      "color": "#EC4899",
+      "icon": "🎨",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:02:35.400Z",
+      "updatedAt": "2026-10-01T07:02:35.400Z"
+    },
+    {
+      "id": "proj-inbox-usr_1790839252644_ndgx6",
+      "userId": "usr_1790839252644_ndgx6",
+      "name": "Inbox",
+      "color": "#6B7280",
+      "icon": "📥",
+      "isSystem": true,
+      "createdAt": "2026-10-01T07:20:52.644Z",
+      "updatedAt": "2026-10-01T07:20:52.644Z"
+    },
+    {
+      "id": "proj-eng-usr_1790839252644_ndgx6",
+      "userId": "usr_1790839252644_ndgx6",
+      "name": "Engineering",
+      "color": "#3B82F6",
+      "icon": "⚡",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:20:52.644Z",
+      "updatedAt": "2026-10-01T07:20:52.644Z"
+    },
+    {
+      "id": "proj-design-usr_1790839252644_ndgx6",
+      "userId": "usr_1790839252644_ndgx6",
+      "name": "Design System",
+      "color": "#EC4899",
+      "icon": "🎨",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:20:52.644Z",
+      "updatedAt": "2026-10-01T07:20:52.644Z"
+    },
+    {
+      "id": "proj-inbox-usr_1790839252734_l4iq0",
+      "userId": "usr_1790839252734_l4iq0",
+      "name": "Inbox",
+      "color": "#6B7280",
+      "icon": "📥",
+      "isSystem": true,
+      "createdAt": "2026-10-01T07:20:52.734Z",
+      "updatedAt": "2026-10-01T07:20:52.734Z"
+    },
+    {
+      "id": "proj-eng-usr_1790839252734_l4iq0",
+      "userId": "usr_1790839252734_l4iq0",
+      "name": "Engineering",
+      "color": "#3B82F6",
+      "icon": "⚡",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:20:52.734Z",
+      "updatedAt": "2026-10-01T07:20:52.734Z"
+    },
+    {
+      "id": "proj-design-usr_1790839252734_l4iq0",
+      "userId": "usr_1790839252734_l4iq0",
+      "name": "Design System",
+      "color": "#EC4899",
+      "icon": "🎨",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:20:52.734Z",
+      "updatedAt": "2026-10-01T07:20:52.734Z"
+    },
+    {
+      "id": "proj-inbox-usr_1790839252755_8p91x",
+      "userId": "usr_1790839252755_8p91x",
+      "name": "Inbox",
+      "color": "#6B7280",
+      "icon": "📥",
+      "isSystem": true,
+      "createdAt": "2026-10-01T07:20:52.755Z",
+      "updatedAt": "2026-10-01T07:20:52.755Z"
+    },
+    {
+      "id": "proj-eng-usr_1790839252755_8p91x",
+      "userId": "usr_1790839252755_8p91x",
+      "name": "Engineering",
+      "color": "#3B82F6",
+      "icon": "⚡",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:20:52.755Z",
+      "updatedAt": "2026-10-01T07:20:52.755Z"
+    },
+    {
+      "id": "proj-design-usr_1790839252755_8p91x",
+      "userId": "usr_1790839252755_8p91x",
+      "name": "Design System",
+      "color": "#EC4899",
+      "icon": "🎨",
+      "isSystem": false,
+      "createdAt": "2026-10-01T07:20:52.755Z",
+      "updatedAt": "2026-10-01T07:20:52.755Z"
+    }
+  ],
+  "settings": []
+}
